@@ -21,13 +21,15 @@ class MainWindow(QtWidgets.QMainWindow):
         self.plotter = QtInteractor(self.canvas3D)
         layout = QtWidgets.QVBoxLayout(self.canvas3D)
         layout.addWidget(self.plotter.interactor)
-        self.plotter.add_axes()
+        #self.plotter.add_axes()
         #self.plotter.set_viewup([0, 1, 0], reset=False)
 
         # Load your SMPL OBJ file
         self.smpl = SMPLModel('./SMPL_models/basicModel_f_lbs_10_207_0_v1.0.0.pkl')
 
         self.current_pose = np.zeros([24,3])
+        self.current_pose[16, 2] = 5.6
+        self.current_pose[17, 2] = -5.6
         original_rotation = R.from_rotvec(self.current_pose[0,:])
         x_axis_rotation = R.from_rotvec(np.pi/2 * np.array([1, 0, 0]))
         z_axis_rotation = R.from_rotvec(np.pi / 2 * np.array([0, 0, 1]))
@@ -41,8 +43,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.smpl_mesh = pv.PolyData(self.smpl.verts, faces_pv)
 
         self.mesh_actor = self.plotter.add_mesh(
-            self.smpl_mesh, color="lightblue", show_edges=True,
-            opacity=0.3, pickable=False  # <-- important
+            self.smpl_mesh, color="lightgray", show_edges=False,
+            opacity=1, pickable=False
         )
         self.plotter.reset_camera()
 
