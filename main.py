@@ -19,6 +19,10 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.init_shape_sliders()
         self.btExport.clicked.connect(self.export_smpl)
+        self.btThin.clicked.connect(self.set_thin)
+        self.btStandard.clicked.connect(self.set_standard)
+        self.btIntermediate.clicked.connect(self.set_inter)
+        self.btFat.clicked.connect(self.set_fat)
 
         # Replace QWidget placeholder with QtInteractor
         self.plotter = QtInteractor(self.canvas3D)
@@ -53,6 +57,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.plotter.reset_camera()
 
     from utils.bodyshape import init_shape_sliders, update_shape
+    from utils.predefined import set_thin, set_standard, set_inter, set_fat
     from utils.io import export_smpl
 
 
@@ -60,6 +65,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(add_help=True, description="UI for SMPL shape manipulation.")
     parser.add_argument('--output_path', type=str, default="./outputs",
                         help='The folder to hold UI log files.')
+    parser.add_argument('--slider_scale', type=int, default=1500,
+                        help='Shape slider scale')
     args = parser.parse_args()
 
     os.makedirs(args.output_path, exist_ok=True)
