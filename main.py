@@ -17,6 +17,8 @@ class MainWindow(QtWidgets.QMainWindow):
         # Load UI from Designer
         uic.loadUi("./UI_utils/MainWindow.ui", self)
 
+        self.init_shape_sliders()
+
         # Replace QWidget placeholder with QtInteractor
         self.plotter = QtInteractor(self.canvas3D)
         layout = QtWidgets.QVBoxLayout(self.canvas3D)
@@ -27,6 +29,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # Load your SMPL OBJ file
         self.smpl = SMPLModel('./SMPL_models/basicModel_f_lbs_10_207_0_v1.0.0.pkl')
 
+        self.beta = np.zeros(10)
         self.current_pose = np.zeros([24,3])
         self.current_pose[16, 2] = 5.6
         self.current_pose[17, 2] = -5.6
@@ -35,7 +38,7 @@ class MainWindow(QtWidgets.QMainWindow):
         z_axis_rotation = R.from_rotvec(np.pi / 2 * np.array([0, 0, 1]))
         combined_rotation = z_axis_rotation * x_axis_rotation * original_rotation
         self.current_pose[0,:] = combined_rotation.as_rotvec()
-        self.smpl.set_params(pose=self.current_pose)
+        self.smpl.set_params(pose=self.current_pose, beta=self.beta)
 
         faces_pv = np.hstack([
             np.full((self.smpl.faces.shape[0], 1), 3),  # column of 3s
@@ -47,6 +50,8 @@ class MainWindow(QtWidgets.QMainWindow):
             opacity=1, pickable=False
         )
         self.plotter.reset_camera()
+
+    from utils.bodyshape import init_shape_sliders, update_shape
 
 
 if __name__ == "__main__":
