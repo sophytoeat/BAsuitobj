@@ -18,6 +18,7 @@ class MainWindow(QtWidgets.QMainWindow):
         uic.loadUi("./UI_utils/MainWindow.ui", self)
 
         self.init_shape_sliders()
+        self.btExport.clicked.connect(self.export_smpl)
 
         # Replace QWidget placeholder with QtInteractor
         self.plotter = QtInteractor(self.canvas3D)
@@ -52,6 +53,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.plotter.reset_camera()
 
     from utils.bodyshape import init_shape_sliders, update_shape
+    from utils.io import export_smpl
 
 
 if __name__ == "__main__":
@@ -59,6 +61,8 @@ if __name__ == "__main__":
     parser.add_argument('--output_path', type=str, default="./outputs",
                         help='The folder to hold UI log files.')
     args = parser.parse_args()
+
+    os.makedirs(args.output_path, exist_ok=True)
 
     app = QtWidgets.QApplication(sys.argv)
     window = MainWindow(args)

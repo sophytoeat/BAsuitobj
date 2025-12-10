@@ -27,8 +27,8 @@
    <widget class="QPushButton" name="btMeasures">
     <property name="geometry">
      <rect>
-      <x>760</x>
-      <y>440</y>
+      <x>910</x>
+      <y>450</y>
       <width>161</width>
       <height>41</height>
      </rect>
@@ -37,11 +37,11 @@
      <string>Print Measures</string>
     </property>
    </widget>
-   <widget class="QPlainTextEdit" name="plainTextEdit">
+   <widget class="QPlainTextEdit" name="NameExport">
     <property name="geometry">
      <rect>
-      <x>760</x>
-      <y>510</y>
+      <x>910</x>
+      <y>550</y>
       <width>161</width>
       <height>41</height>
      </rect>
@@ -53,8 +53,8 @@
    <widget class="QPushButton" name="btExport">
     <property name="geometry">
      <rect>
-      <x>760</x>
-      <y>560</y>
+      <x>910</x>
+      <y>600</y>
       <width>161</width>
       <height>41</height>
      </rect>
@@ -63,7 +63,7 @@
      <string>Save .obj</string>
     </property>
    </widget>
-   <widget class="QWidget" name="">
+   <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
       <x>760</x>
@@ -145,11 +145,11 @@
      </item>
     </layout>
    </widget>
-   <widget class="QWidget" name="">
+   <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
       <x>720</x>
-      <y>30</y>
+      <y>40</y>
       <width>21</width>
       <height>361</height>
      </rect>
@@ -226,6 +226,58 @@
       </widget>
      </item>
     </layout>
+   </widget>
+   <widget class="QPushButton" name="btThin">
+    <property name="geometry">
+     <rect>
+      <x>720</x>
+      <y>450</y>
+      <width>141</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>thin</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="btStandard">
+    <property name="geometry">
+     <rect>
+      <x>720</x>
+      <y>500</y>
+      <width>141</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>standard</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="btIntermediate">
+    <property name="geometry">
+     <rect>
+      <x>720</x>
+      <y>550</y>
+      <width>141</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>intermediate</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="btFat">
+    <property name="geometry">
+     <rect>
+      <x>720</x>
+      <y>600</y>
+      <width>141</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>fat</string>
+    </property>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
