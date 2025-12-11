@@ -106,7 +106,12 @@ class Measurer():
 
                 value = self.measure_circumference(m_name)
                 self.measurements[m_name] = value
-    
+
+            elif self.measurement_types[m_name] == MeasurementType().DERIVED:
+
+                value = self.measure_derived(m_name)
+                self.measurements[m_name] = value
+
             else:
                 print(f"Measurement {m_name} not defined")
 
@@ -195,6 +200,33 @@ class Measurer():
 
         return self._get_dist(slice_segments_hull)
 
+    def measure_derived(self, measurement_name: str):
+        '''
+        Compute derived measurements from existing measurements.
+        :param measurement_name: str - measurement name
+
+        Return
+        float of measurement value in cm
+        '''
+
+        if measurement_name not in self.derived_definitions:
+            print(f"Derived measurement {measurement_name} not defined")
+            return None
+
+        # Get the definition for this derived measurement
+        derived_def = self.derived_definitions[measurement_name]
+
+        # Check if required measurements are available
+        required_measurements = derived_def["requires"]
+        for req_measure in required_measurements:
+            if req_measure not in self.measurements:
+                # Measure the required measurement if not already done
+                self.measure([req_measure])
+
+        # Compute and return the derived measurement
+        compute_func = derived_def["function"]
+        return compute_func(self.measurements)
+
     def height_normalize_measurements(self, new_height: float):
         ''' 
         Scale all measurements so that the height measurement gets
@@ -279,6 +311,7 @@ class MeasureSMPL(Measurer):
         self.length_definitions = SMPLMeasurementDefinitions().LENGTHS
         self.circumf_definitions = SMPLMeasurementDefinitions().CIRCUMFERENCES
         self.circumf_2_bodypart = SMPLMeasurementDefinitions().CIRCUMFERENCE_TO_BODYPARTS
+        self.derived_definitions = SMPLMeasurementDefinitions().DERIVED
         self.all_possible_measurements = SMPLMeasurementDefinitions().possible_measurements
 
         self.joint2ind = SMPL_JOINT2IND

@@ -25,6 +25,7 @@ STANDARD_LABELS = {
 class MeasurementType():
     CIRCUMFERENCE = "circumference"
     LENGTH = "length"
+    DERIVED = "derived"
 
 
 MEASUREMENT_TYPES = {
@@ -41,11 +42,20 @@ MEASUREMENT_TYPES = {
         "forearm right circumference": MeasurementType.CIRCUMFERENCE,
         "arm right length": MeasurementType.LENGTH,
         "inside leg height": MeasurementType.LENGTH,
+        "outside leg height": MeasurementType.DERIVED,
         "thigh left circumference": MeasurementType.CIRCUMFERENCE,
         "calf left circumference": MeasurementType.CIRCUMFERENCE,
         "ankle left circumference": MeasurementType.CIRCUMFERENCE,
         "shoulder breadth": MeasurementType.LENGTH,
     }
+
+# Format: "measurement_name": (lambda function, [list of required measurements])
+DERIVED_MEASUREMENTS = {
+    "outside leg height": {
+        "function": lambda measurements: measurements["height"] / 2 + 0.05,
+        "requires": ["height"]
+    }
+}
 
 class SMPLMeasurementDefinitions():
     '''
@@ -53,15 +63,17 @@ class SMPLMeasurementDefinitions():
 
     To add a new measurement:
     1. add it to the measurement_types dict and set the type:
-       LENGTH or CIRCUMFERENCE
-    2. depending on the type, define the measurement in LENGTHS or 
-       CIRCUMFERENCES dict
-       - LENGTHS are defined using 2 landmarks - the measurement is 
+       LENGTH, CIRCUMFERENCE, or DERIVED
+    2. depending on the type, define the measurement in LENGTHS,
+       CIRCUMFERENCES, or DERIVED_MEASUREMENTS dict
+       - LENGTHS are defined using 2 landmarks - the measurement is
                 found with distance between landmarks
-       - CIRCUMFERENCES are defined with landmarks and joints - the 
-                measurement is found by cutting the SMPL model with the 
+       - CIRCUMFERENCES are defined with landmarks and joints - the
+                measurement is found by cutting the SMPL model with the
                 plane defined by a point (landmark point) and normal (
                 vector connecting the two joints)
+       - DERIVED measurements are computed from other measurements using
+                a lambda function defined in DERIVED_MEASUREMENTS
     3. If the body part is a CIRCUMFERENCE, a possible issue that arises is
        that the plane cutting results in multiple body part slices. To alleviate
        that, define the body part where the measurement should be located in 
@@ -71,6 +83,7 @@ class SMPLMeasurementDefinitions():
     '''
 
     possible_measurements = MEASUREMENT_TYPES.keys()
+    DERIVED = DERIVED_MEASUREMENTS
     
     LENGTHS = {"height": 
                     (SMPL_LANDMARK_INDICES["HEAD_TOP"], 

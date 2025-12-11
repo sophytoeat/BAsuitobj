@@ -40,7 +40,7 @@ def print_measures(self):
         'C': measurer.measurements['hip circumference'],
         'D': measurer.measurements['waist circumference'],
         'E': measurer.measurements['thigh left circumference'],
-        'F': measurer.measurements['height'] / 2 + 0.05,
+        'F': measurer.measurements['outside leg height'],
         'G': measurer.measurements['inside leg height'],
         'H': measurer.measurements['shoulder to crotch height'],
         'I': measurer.measurements['shoulder breadth'],
