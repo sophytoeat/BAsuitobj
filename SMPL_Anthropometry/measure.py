@@ -251,57 +251,6 @@ class Measurer():
             self.labeled_measurements[set_label] = self.measurements[set_name]
             self.labels2names[set_label] = set_name
 
-    def visualize(self,
-                 measurement_names: List[str] = [], 
-                 landmark_names: List[str] = [],
-                 title="Measurement visualization",
-                 visualize_body: bool = True,
-                 visualize_landmarks: bool = True,
-                 visualize_joints: bool = True,
-                 visualize_measurements: bool=True):
-
-        # TODO: create default model if not defined
-        # if self.verts is None:
-        #     print("Model has not been defined. \
-        #           Visualizing on default male model")
-        #     model = create_model(self.smpl_path, "MALE", num_coefs=10)
-        #     shape = torch.zeros((1, 10), dtype=torch.float32)
-        #     model_output = set_shape(model, shape)
-            
-        #     verts = model_output.vertices.detach().cpu().numpy().squeeze()
-        #     faces = model.faces.squeeze()
-        # else:
-        #     verts = self.verts
-        #     faces = self.faces 
-
-        if measurement_names == []:
-            measurement_names = self.all_possible_measurements
-
-        if landmark_names == []:
-            landmark_names = list(self.landmarks.keys())
-
-        vizz = Visualizer(verts=self.verts,
-                        faces=self.faces,
-                        joints=self.joints,
-                        landmarks=self.landmarks,
-                        measurements=self.measurements,
-                        measurement_types=self.measurement_types,
-                        length_definitions=self.length_definitions,
-                        circumf_definitions=self.circumf_definitions,
-                        joint2ind=self.joint2ind,
-                        circumf_2_bodypart=self.circumf_2_bodypart,
-                        face_segmentation=self.face_segmentation,
-                        visualize_body=visualize_body,
-                        visualize_landmarks=visualize_landmarks,
-                        visualize_joints=visualize_joints,
-                        visualize_measurements=visualize_measurements,
-                        title=title
-                        )
-        
-        vizz.visualize(measurement_names=measurement_names,
-                       landmark_names=landmark_names,
-                       title=title)
-
 
 class MeasureSMPL(Measurer):
     '''
@@ -494,5 +443,3 @@ if __name__ == "__main__":
         measurer.label_measurements(STANDARD_LABELS)
         print("Labeled measurements")
         pprint(measurer.labeled_measurements)
-
-        measurer.visualize()
