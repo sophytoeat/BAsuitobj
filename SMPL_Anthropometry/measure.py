@@ -2,8 +2,6 @@
 from typing import List, Dict
 import numpy as np
 import trimesh
-import torch
-import smplx
 from pprint import pprint
 import os
 import argparse
@@ -13,7 +11,40 @@ from SMPL_Anthropometry.utils import *
 from SMPL_Anthropometry.landmark_definitions import *
 from SMPL_Anthropometry.joint_definitions import *
 
+import sys
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from utils.smpl_np import SMPLModel
 
+
+def get_smpl_model_path(gender):
+    '''
+    Get path to SMPL model file based on gender.
+    :param gender: str - MALE, FEMALE, or NEUTRAL
+
+    Returns:
+    :param model_path: str - path to the pkl file
+    '''
+    # Try both locations - first check if SMPL_models exists (used by UI),
+    # otherwise use SMPL_Anthropometry/data/smpl (current location)
+
+    # Map gender to model file names for different locations
+    ui_model_map = {
+        'MALE': 'basicModel_m_lbs_10_207_0_v1.0.0.pkl',
+        'FEMALE': 'basicModel_f_lbs_10_207_0_v1.0.0.pkl',
+        'NEUTRAL': 'basicmodel_m_lbs_10_207_0_v1.0.0.pkl'
+    }
+
+    data_model_map = {
+        'MALE': 'SMPL_NEUTRAL.pkl',  # Use neutral for male if not available
+        'FEMALE': 'SMPL_FEMALE.pkl',
+        'NEUTRAL': 'SMPL_NEUTRAL.pkl'
+    }
+
+    gender_upper = gender.upper()
+
+    model_path = os.path.join('SMPL_models', ui_model_map.get(gender_upper, ui_model_map['NEUTRAL']))
+    if os.path.exists(model_path):
+        return model_path
 
 def set_shape(model, shape_coefs):
     '''
@@ -297,13 +328,16 @@ class MeasureSMPL(Measurer):
         super().__init__()
 
         self.model_type = "smpl"
-        self.body_model_root = "SMPL_Anthropometry/data"
-        self.body_model_path = os.path.join(self.body_model_root, 
-                                            self.model_type)
 
-        self.faces = smplx.SMPL(self.body_model_path, ext="pkl").faces
-        face_segmentation_path = os.path.join(self.body_model_path,
-                                              f"{self.model_type}_body_parts_2_faces.json")
+        # Load a reference model to get faces
+        # Use FEMALE model by default for getting faces (same across all genders)
+        ref_model_path = get_smpl_model_path('FEMALE')
+        ref_model = SMPLModel(ref_model_path)
+        self.faces = ref_model.faces
+
+        # Load face segmentation from SMPL_Anthropometry/data/smpl
+        face_segmentation_path = os.path.join("SMPL_models",
+                                              "smpl_body_parts_2_faces.json")
         self.face_segmentation = load_face_segmentation(face_segmentation_path)
 
         self.landmarks = SMPL_LANDMARK_INDICES
@@ -319,118 +353,47 @@ class MeasureSMPL(Measurer):
 
         self.num_points = 6890
 
-    def from_verts(self, verts: torch.tensor):
+    def from_verts(self, verts: np.ndarray):
         '''
         Construct body model from only vertices.
-        :param verts: torch.tensor (6890,3) of SMPL vertices
-        '''        
+        :param verts: np.ndarray (6890,3) of SMPL vertices
+        '''
 
         verts = verts.squeeze()
         error_msg = f"verts need to be of dimension ({self.num_points},3)"
-        assert verts.shape == torch.Size([self.num_points,3]), error_msg
+        assert verts.shape == (self.num_points, 3), error_msg
 
-        joint_regressor = get_joint_regressor(self.model_type, 
-                                              self.body_model_root,
-                                              gender="NEUTRAL", 
-                                              num_thetas=self.num_joints)
-        joints = torch.matmul(joint_regressor, verts)
-        self.joints = joints.numpy()
-        self.verts = verts.numpy()
+        # Get joint regressor from a reference model
+        ref_model_path = get_smpl_model_path('NEUTRAL')
+        ref_model = SMPLModel(ref_model_path)
+        joint_regressor = ref_model.J_regressor
 
-    def from_body_model(self, gender: str, shape: torch.tensor):
+        joints = np.matmul(joint_regressor, verts)
+        self.joints = joints
+        self.verts = verts
+
+    def from_body_model(self, gender: str, shape: np.ndarray):
         '''
-        Construct body model from given gender and shape params 
-        of SMPl model.
+        Construct body model from given gender and shape params
+        of SMPL model.
         :param gender: str, MALE or FEMALE or NEUTRAL
-        :param shape: torch.tensor, (1,10) beta parameters
+        :param shape: np.ndarray, (10,) or (1,10) beta parameters
                                     for SMPL model
-        '''  
-
-        model = create_model(model_type=self.model_type, 
-                             model_root=self.body_model_root, 
-                             gender=gender,
-                             num_betas=10,
-                             num_thetas=self.num_joints)    
-        model_output = set_shape(model, shape)
-        
-        self.verts = model_output.vertices.detach().cpu().numpy().squeeze()
-        self.joints = model_output.joints.squeeze().detach().cpu().numpy()
-        self.gender = gender
-
-
-class MeasureSMPLX(Measurer):
-    '''
-    Measure the SMPLX model defined either by the shape parameters or
-    by its 10475 vertices. 
-
-    All the measurements are expressed in cm.
-    '''
-
-    def __init__(self):
-        
-        super().__init__()
-
-        self.model_type = "smplx"
-        self.body_model_root = "data"
-        self.body_model_path = os.path.join(self.body_model_root, 
-                                            self.model_type)
-
-        self.faces = smplx.SMPLX(self.body_model_path, ext="pkl").faces
-        face_segmentation_path = os.path.join(self.body_model_path,
-                                              f"{self.model_type}_body_parts_2_faces.json")
-        self.face_segmentation = load_face_segmentation(face_segmentation_path)
-
-        self.landmarks = SMPLX_LANDMARK_INDICES
-        self.measurement_types = MEASUREMENT_TYPES
-        self.length_definitions = SMPLXMeasurementDefinitions().LENGTHS
-        self.circumf_definitions = SMPLXMeasurementDefinitions().CIRCUMFERENCES
-        self.circumf_2_bodypart = SMPLXMeasurementDefinitions().CIRCUMFERENCE_TO_BODYPARTS
-        self.all_possible_measurements = SMPLXMeasurementDefinitions().possible_measurements
-
-        self.joint2ind = SMPLX_JOINT2IND
-        self.num_joints = SMPLX_NUM_JOINTS
-
-        self.num_points = 10475
-
-    def from_verts(self,
-                   verts: torch.tensor):
         '''
-        Construct body model from only vertices.
-        :param verts: torch.tensor (10475,3) of SMPLX vertices
-        '''        
 
-        verts = verts.squeeze()
-        error_msg = f"verts need to be of dimension ({self.num_points},3)"
-        assert verts.shape == torch.Size([self.num_points,3]), error_msg
+        # Load the appropriate SMPL model
+        model_path = get_smpl_model_path(gender)
+        model = SMPLModel(model_path)
 
-        joint_regressor = get_joint_regressor(self.model_type, 
-                                              self.body_model_root,
-                                              gender="NEUTRAL", 
-                                              num_thetas=self.num_joints)
-        joints = torch.matmul(joint_regressor, verts)
-        self.joints = joints.numpy()
-        self.verts = verts.numpy()
+        # Ensure shape is 1D array of length 10
+        shape = np.array(shape).flatten()
+        assert len(shape) == 10, f"Shape must be length 10, got {len(shape)}"
 
-    def from_body_model(self,
-                        gender: str,
-                        shape: torch.tensor):
-        '''
-        Construct body model from given gender and shape params 
-        of SMPl model.
-        :param gender: str, MALE or FEMALE or NEUTRAL
-        :param shape: torch.tensor, (1,10) beta parameters
-                                    for SMPL model
-        '''  
+        # Set shape parameters (pose remains at zero/T-pose)
+        model.set_params(beta=shape)
 
-        model = create_model(model_type=self.model_type, 
-                             model_root=self.body_model_root, 
-                             gender=gender,
-                             num_betas=10,
-                             num_thetas=self.num_joints)    
-        model_output = set_shape(model, shape)
-        
-        self.verts = model_output.vertices.detach().cpu().numpy().squeeze()
-        self.joints = model_output.joints.squeeze().detach().cpu().numpy()
+        self.verts = model.verts
+        self.joints = model.J
         self.gender = gender
 
 
@@ -439,40 +402,5 @@ class MeasureBody():
         model_type = model_type.lower()
         if model_type == 'smpl':
             return MeasureSMPL()
-        elif model_type == 'smplx':
-            return MeasureSMPLX()
         else:
-            raise NotImplementedError("Model type not defined")
-
-
-
-if __name__ == "__main__":
-
-    parser = argparse.ArgumentParser(description='Measure body models.')
-    parser.add_argument('--measure_neutral_smpl_with_mean_shape', action='store_true',
-                        help="Measure a mean shape smpl model.")
-    parser.add_argument('--measure_neutral_smplx_with_mean_shape', action='store_true',
-                        help="Measure a mean shape smplx model.")
-    args = parser.parse_args()
-
-    model_types_to_measure = []
-    if args.measure_neutral_smpl_with_mean_shape:
-        model_types_to_measure.append("smpl")
-    elif args.measure_neutral_smplx_with_mean_shape:
-        model_types_to_measure.append("smplx")
-
-    for model_type in model_types_to_measure:
-        print(f"Measuring {model_type} body model")
-        measurer = MeasureBody(model_type)
-
-        betas = torch.zeros((1, 10), dtype=torch.float32)
-        measurer.from_body_model(gender="NEUTRAL", shape=betas)
-
-        measurement_names = measurer.all_possible_measurements
-        measurer.measure(measurement_names)
-        print("Measurements")
-        pprint(measurer.measurements)
-
-        measurer.label_measurements(STANDARD_LABELS)
-        print("Labeled measurements")
-        pprint(measurer.labeled_measurements)
+            raise NotImplementedError(f"Model type '{model_type}' not supported. Only 'smpl' is supported.")

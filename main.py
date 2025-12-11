@@ -1,6 +1,5 @@
 import os
 import sys
-import torch
 import argparse
 import numpy as np
 from scipy.spatial.transform import Rotation as R

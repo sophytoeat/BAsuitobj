@@ -2,7 +2,6 @@ import os
 from PyQt5.QtCore import pyqtSlot
 from utils.measurement import Body3D
 
-import torch
 from pprint import pprint
 from SMPL_Anthropometry.measure import MeasureBody
 from SMPL_Anthropometry.measurement_definitions import STANDARD_LABELS
@@ -27,9 +26,9 @@ def print_params(self):
 
 @pyqtSlot()
 def print_measures(self):
+
     measurer = MeasureBody('smpl')
-    beta = torch.from_numpy(self.beta).unsqueeze(0).float()
-    measurer.from_body_model(gender='FEMALE', shape=beta)
+    measurer.from_body_model(gender='FEMALE', shape=self.beta)
     measurement_names = measurer.all_possible_measurements
     measurer.measure(measurement_names)
     measurer.label_measurements(STANDARD_LABELS)
