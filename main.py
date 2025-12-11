@@ -18,11 +18,12 @@ class MainWindow(QtWidgets.QMainWindow):
         uic.loadUi("./UI_utils/MainWindow.ui", self)
 
         self.init_shape_sliders()
-        self.btExport.clicked.connect(self.export_smpl)
         self.btThin.clicked.connect(self.set_thin)
         self.btStandard.clicked.connect(self.set_standard)
         self.btIntermediate.clicked.connect(self.set_inter)
         self.btFat.clicked.connect(self.set_fat)
+        self.btExport.clicked.connect(self.export_smpl)
+        self.btParams.clicked.connect(self.print_params)
 
         # Replace QWidget placeholder with QtInteractor
         self.plotter = QtInteractor(self.canvas3D)
@@ -58,7 +59,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     from utils.bodyshape import init_shape_sliders, update_shape
     from utils.predefined import set_thin, set_standard, set_inter, set_fat
-    from utils.io import export_smpl
+    from utils.io import export_smpl, print_params
 
 
 if __name__ == "__main__":

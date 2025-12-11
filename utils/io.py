@@ -11,3 +11,9 @@ def export_smpl(self):
 
     full_path = os.path.join(self.args.output_path, filename)
     self.smpl.save_to_obj(full_path)
+
+
+@pyqtSlot()
+def print_params(self):
+    print("====== Params ======")
+    print(self.beta)
