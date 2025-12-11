@@ -11,10 +11,11 @@ def init_shape_sliders(self):
 @pyqtSlot()
 def update_shape(self):
 
-    new_beta = self.beta.copy()
-    for i in range(10):
-        new_beta[i] = float(self.slider_list[i].value()) / self.args.slider_scale
-    self.beta = new_beta
+    sender = self.sender()
+    if sender in self.slider_list:
+        slider_index = self.slider_list.index(sender)
+        # Only update the specific beta value that corresponds to the changed slider
+        self.beta[slider_index] = float(sender.value()) / self.args.slider_scale
 
     self.smpl.set_params(beta=self.beta)
     self.smpl_mesh.points = self.smpl.verts
