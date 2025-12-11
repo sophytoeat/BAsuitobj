@@ -24,6 +24,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.btFat.clicked.connect(self.set_fat)
         self.btExport.clicked.connect(self.export_smpl)
         self.btParams.clicked.connect(self.print_params)
+        self.btMeasures.clicked.connect(self.print_measures)
 
         # Replace QWidget placeholder with QtInteractor
         self.plotter = QtInteractor(self.canvas3D)
@@ -59,7 +60,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     from utils.bodyshape import init_shape_sliders, update_shape
     from utils.predefined import set_thin, set_standard, set_inter, set_fat
-    from utils.io import export_smpl, print_params
+    from utils.io import export_smpl, print_params, print_measures
 
 
 if __name__ == "__main__":
