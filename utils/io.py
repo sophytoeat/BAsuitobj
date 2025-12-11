@@ -2,6 +2,11 @@ import os
 from PyQt5.QtCore import pyqtSlot
 from utils.measurement import Body3D
 
+import torch
+from pprint import pprint
+from SMPL_Anthropometry.measure import MeasureBody
+from SMPL_Anthropometry.measurement_definitions import STANDARD_LABELS
+
 @pyqtSlot()
 def export_smpl(self):
 
@@ -22,8 +27,24 @@ def print_params(self):
 
 @pyqtSlot()
 def print_measures(self):
-    measure_body = Body3D(self.smpl.verts, self.smpl.faces)
-    body_measurements = measure_body.getMeasurements()
+    measurer = MeasureBody('smpl')
+    beta = torch.from_numpy(self.beta).unsqueeze(0).float()
+    measurer.from_body_model(gender='FEMALE', shape=beta)
+    measurement_names = measurer.all_possible_measurements
+    measurer.measure(measurement_names)
+    measurer.label_measurements(STANDARD_LABELS)
+
+    body_measurements = {
+        'A': measurer.measurements['height'],
+        'B': measurer.measurements['chest circumference'],
+        'C': measurer.measurements['hip circumference'],
+        'D': measurer.measurements['waist circumference'],
+        'E': measurer.measurements['thigh left circumference'],
+        'F': measurer.measurements['height'] / 2 + 0.05,
+        'G': measurer.measurements['inside leg height'],
+        'H': measurer.measurements['shoulder to crotch height'],
+        'I': measurer.measurements['shoulder breadth'],
+    }
 
     print("====== Measures ======")
     print(body_measurements)
