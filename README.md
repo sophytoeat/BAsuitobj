@@ -34,6 +34,7 @@ project_root/
 │   ├── basicModel_neutral_lbs_10_207_0_v1.0.0.pkl
 │   ├── J_regressor_extra.npy
 │   └── J_regressor_h36m.npy
+├── SMPL_Anthropometry
 ├── UI_utils/
 ├── utils/
 ├── main.py
