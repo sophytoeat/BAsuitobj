@@ -4,7 +4,7 @@
 ```
 conda create --name SMPL python=3.10
 conda activate SMPL
-pip install pyqt5-tools
+pip install PyQt5
 pip install pyvista[all]
 pip install pyvistaqt
 pip install scipy
@@ -12,7 +12,7 @@ pip install numpy==1.23
 ```
 Trouble-shooting:
 
-qt.qpa.plugin: Could not load the Qt platform plugin "xcb" in "" even though it was found.
+[Error] qt.qpa.plugin: Could not load the Qt platform plugin "xcb" in "" even though it was found.
 This application failed to start because no Qt platform plugin could be initialized. Reinstalling the application may fix this problem.
 Available platform plugins are: eglfs, linuxfb, minimal, minimalegl, offscreen, vnc, wayland-egl, wayland, wayland-xcomposite-egl, wayland-xcomposite-glx, webgl, xcb.
 
@@ -34,7 +34,7 @@ project_root/
 │   ├── basicModel_neutral_lbs_10_207_0_v1.0.0.pkl
 │   ├── J_regressor_extra.npy
 │   └── J_regressor_h36m.npy
-├── SMPL_Anthropometry
+├── SMPL_Anthropometry/
 ├── UI_utils/
 ├── utils/
 ├── main.py
