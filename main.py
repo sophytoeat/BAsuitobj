@@ -1,9 +1,30 @@
 import os
 import sys
+import warnings
+
+# WSL2環境でのOpenGL/Mesaドライバー問題を回避
+os.environ['LIBGL_ALWAYS_SOFTWARE'] = '1'
+os.environ['MESA_GL_VERSION_OVERRIDE'] = '4.5'
+
+# PyVistaのVTK関連警告を抑制
+warnings.filterwarnings('ignore', category=DeprecationWarning)
+
 import argparse
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 import pyvista as pv
+
+# PyVistaのグローバル設定
+pv.global_theme.allow_empty_mesh = True
+
+# PyVistaのPolyData.__del__のバグを回避するモンキーパッチ
+_original_polydata_del = pv.PolyData.__del__
+def _safe_polydata_del(self):
+    try:
+        _original_polydata_del(self)
+    except (AttributeError, TypeError):
+        pass  # WSL2環境でのVTKクリーンアップエラーを無視
+pv.PolyData.__del__ = _safe_polydata_del
 from pyvistaqt import QtInteractor
 from PyQt5 import QtWidgets, uic, QtCore
 from utils.smpl_np import SMPLModel

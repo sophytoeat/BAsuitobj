@@ -18,7 +18,7 @@ def load_face_segmentation(path: str):
             with open(path, 'r') as f:
                 face_segmentation = json.load(f)
         except FileNotFoundError:
-            sys.exit(f"No such file - {path}")
+            raise FileNotFoundError(f"Face segmentation file not found: {path}")
 
         return face_segmentation
 
